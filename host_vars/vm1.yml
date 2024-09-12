@@ -1,0 +1,12 @@
+---
+DirecotyVagrant: /var/ProjectVagrantx
+ssh_port: 5544
+allowed_ips_ports:
+  - ip: 192.168.3.100
+    ports:
+      - 5544
+  - ip: 0
+    ports: 
+      - 80
+      - 443
+      - 8080

@@ -1,0 +1,24 @@
+*filter
+
+# Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
+-A INPUT -i lo -j ACCEPT
+-A INPUT ! -i lo -s 127.0.0.0/8 -j DROP
+
+# Accept all established inbound connections
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow specified ports for each IP
+{% for entry in allowed_ips_ports %}
+{% for port in entry.ports %}
+{% if entry.ip != 0 %}
+-A INPUT -p tcp -s {{ entry.ip }} --dport {{ port }} -j ACCEPT
+{% else %}
+-A INPUT -p tcp --dport {{ port }} -j ACCEPT
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+# Drop all other inbound traffic
+-A INPUT -j DROP
+
+COMMIT

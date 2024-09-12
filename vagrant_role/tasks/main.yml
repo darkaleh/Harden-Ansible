@@ -1,0 +1,40 @@
+---
+# tasks file for vagrant_role
+- name: Install vagrant
+  apt:
+    name: vagrant
+    state: present
+  become: true
+  tags:
+    - InstallVagrant
+
+- name: Create a directory Vagrant
+  ansible.builtin.file:
+    path: "{{DirecotyVagrant}}"
+    state: directory
+    mode: '0755'
+  tags: 
+    - InstallVagrant
+
+- name: Copy Vagrant Template
+  template:
+    src: Vagrantfile.j2
+    dest: "{{DirecotyVagrant}}/Vagrantfile"
+  tags:
+    - InstallVagrant
+
+- name: Run Vagrant Up
+  command: vagrant up
+  args:
+    chdir: "{{DirecotyVagrant}}"
+  become: true
+  tags:
+    - InstallVagrant
+
+- name: Run Vagrant Destroy
+  shell: vagrant destroy -f
+  args:
+    chdir: "{{DirecotyVagrant}}"
+  become: true
+  tags:
+    - VagrantDestroy

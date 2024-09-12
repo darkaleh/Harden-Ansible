@@ -1,0 +1,81 @@
+---
+#Copy Source List
+- name: Copy file apt Source List
+  ansible.builtin.copy:
+    src: etc/apt/sources.list
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: '0644'
+
+#Apt update And Upgarde
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    upgrade: dist
+  become: true
+
+#Install iptables
+- name: iptables is installed
+  apt:
+    name: iptables
+  become: true
+
+
+# SSH Config
+- name: Change SSH port
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port'
+    line: 'Port {{ ssh_port }}'
+    state: present
+  become: true
+  notify: Restart SSH
+
+- name: Harden Ssh Config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin no'
+    state: present
+  notify: Restart SSH
+  become: true
+
+- name: Disable SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  notify: Restart SSH
+  become: true
+
+# Iptables Config
+- name: Create Directory /etc/iptables 
+  ansible.builtin.file:
+    path: /etc/iptables
+    state: directory
+    mode: '0755'
+
+- name: Config Iptables 
+  template:
+    src: etc/iptables/rules.v4.j2
+    dest: /etc/iptables/rules.v4
+  notify: Apply iptables rules
+  become: true
+  tags: iptables
+
+# fail2ban Configuration
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+  become: true
+
+- name: Copy fail2ban configuration
+  template:
+    src: etc/fail2ban/jail.local.j2
+    dest: /etc/fail2ban/jail.local
+  notify: Restart fail2ban
+  become: true

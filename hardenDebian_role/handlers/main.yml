@@ -1,0 +1,14 @@
+---
+- name: Restart SSH
+  ansible.builtin.systemd:
+    name: ssh
+    state: restarted
+
+- name: Apply iptables rules
+  ansible.builtin.shell: iptables-restore < /etc/iptables/iptables.rules
+  become: true
+
+- name: Restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted
